@@ -28,6 +28,11 @@
         path: "{{ item }}"
         mode: 'u-x,g-wx,o-rwx'
       loop: "{{ discovered_logfiles.stdout_lines }}"
+      failed_when: false  # Don't fail if file was rotated/removed during task execution
+      register: logfile_result
+      changed_when:
+        - logfile_result is not failed
+        - logfile_result is changed
 
     - name: "6.1.4.1 | PATCH | Ensure access to all logfiles has been configured | change permissions"
       when:
