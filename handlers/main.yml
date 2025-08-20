@@ -170,9 +170,18 @@
   failed_when: false
 
 - name: Restart postfix
-  ansible.builtin.service:
-    name: postfix
-    state: restarted
+  block:
+    - name: Check if postfix is masked
+      ansible.builtin.shell: systemctl is-enabled postfix 2>/dev/null || true
+      register: postfix_status
+      changed_when: false
+      failed_when: false
+
+    - name: Restart postfix if not masked
+      ansible.builtin.service:
+        name: postfix
+        state: restarted
+      when: postfix_status.stdout != 'masked'
 
 - name: Restart syslog service
   ansible.builtin.systemd:
